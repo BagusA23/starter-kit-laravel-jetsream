@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Jetstream\Jetstream;
+use Illuminate\Validation\Rules\Password;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -22,7 +23,13 @@ class CreateNewUser implements CreatesNewUsers
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => $this->passwordRules(),
+            'password' => ['required', 'string', 'confirmed',
+                Password::min(8)       // Minimal 8 karakter
+                        ->letters()    // Wajib ada setidaknya satu huruf
+                        ->mixedCase()  // Wajib ada huruf besar dan kecil
+                        ->numbers()    // Wajib ada setidaknya satu angka
+                        ->symbols()    // Wajib ada setidaknya satu simbol
+            ],
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
 
